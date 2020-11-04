@@ -25,15 +25,23 @@ flag = 0
 # send the filename to the server
 client_socket.sendto(str(filename).encode(), (HOST, PORT))
 
-# receive the message from server indicating whether requested file is available or not
-availability, server_address = client_socket.recvfrom(1024)
-availability = availability.decode()
-if availability == "<NOTFOUND>":
-    print("File not available.")
+try:
+    # 3 seconds time out
+    client_socket.settimeout(3)
+    # receive the message from server indicating whether requested file is available or not
+    availability, address = client_socket.recvfrom(1024)
+    availability = availability.decode()
+    if availability == "<NOTFOUND>":
+        print("File not available.")
+        client_socket.close()
+        exit()
+    else:
+        print("File found.")
+except socket.timeout:
+    print("\nTime out: Closing socket")
+    # close the client socket
     client_socket.close()
     exit()
-else:
-    print("File found.")
 
 # start receiving the file and writing into a file
 print("Receiving " + str(filename), end ="...")
@@ -42,7 +50,7 @@ with open(newfilename, "wb") as f:
         try:
             # 3 seconds time out
             client_socket.settimeout(3)
-            bytes_read, server_address = client_socket.recvfrom(BUFFER_SIZE)
+            bytes_read, address = client_socket.recvfrom(BUFFER_SIZE)
             # end timer
             end_time = time.time()
             flag = 1
@@ -52,7 +60,7 @@ with open(newfilename, "wb") as f:
             # write to the file
             f.write(bytes_read)
         except socket.timeout:
-            print("\nClosing socket")
+            print("\nTime out: Closing socket")
             break
 
 # close the client socket

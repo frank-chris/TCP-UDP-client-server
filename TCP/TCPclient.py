@@ -12,6 +12,14 @@ PORT = 12345
 # create the client socket
 client_socket = socket.socket(AF_INET, SOCK_STREAM)
 
+# disable Nagle's Algorithm if user wants to
+if (sys.argv[2] == "Y" or sys.argv[2] == "y"):
+    client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_NODELAY, True)
+
+# disable Delayed ACK if user wants to
+if (sys.argv[3] == "Y" or sys.argv[3] == "y"):
+    client_socket.setsockopt(socket.IPPROTO_TCP, socket.TCP_QUICKACK, True)
+
 # ask user for the name of the file to receieve
 filename = input("Which file do you want to receive? ")
 
